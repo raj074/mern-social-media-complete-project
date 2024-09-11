@@ -1,9 +1,8 @@
-
-
 services:
   frontend:
     container_name: frontend
-    image: frontendimage
+    build:
+      context: ./client
     restart: always
     ports:
       - "3000:3000"
@@ -29,6 +28,20 @@ services:
     volumes:
       - mongodb-data:/data/db
 
+  mongo-express:
+    container_name: mongo-express
+    image: mongo-express
+    restart: always
+    depends_on:
+      - mongo
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongo
+      ME_CONFIG_MONGODB_PORT: 27017
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ""
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ""
+
   proxy:
     container_name: proxy
     image: nginx
@@ -38,6 +51,7 @@ services:
     depends_on:
       - frontend
       - backend
+      - mongo-express
     volumes:
        - ./nginx.conf:/etc/nginx/nginx.conf:ro
        - ./ssl/localhost.crt:/etc/ssl/certs/localhost.crt
